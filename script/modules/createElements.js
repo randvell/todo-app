@@ -1,3 +1,5 @@
+import { getPriorityClass } from './helper.js';
+
 const createElement = ({ tag, className, value }) => {
   const el = document.createElement(tag);
 
@@ -27,10 +29,35 @@ const createButton = (props) => {
   return button;
 };
 
+const createPrioritySelect = () => {
+  const container = createElement({ tag: 'div' });
+  const selectElement = createElement({
+    tag: 'select',
+    className: 'form-select',
+  });
+  selectElement.name = 'priority';
+
+  const options = ['normal', 'important', 'urgent'];
+  const optionLabels = ['Обычная', 'Важная', 'Срочная'];
+
+  options.forEach((option, i) => {
+    const optionElement = createElement({ tag: 'option' });
+    optionElement.value = option;
+    optionElement.textContent = optionLabels[i];
+    selectElement.appendChild(optionElement);
+  });
+
+  const labelElement = createElement({ tag: 'label' });
+  labelElement.textContent = 'Приоритет:';
+  container.append(labelElement, selectElement);
+
+  return container;
+};
+
 const createForm = (props) => {
   const form = createElement({
     tag: 'form',
-    className: 'd-flex align-items-center mb-3',
+    className: 'd-flex align-items-end mb-3 gap-2',
   });
 
   const inputLabel = createElement({
@@ -44,12 +71,15 @@ const createForm = (props) => {
   formInput.placeholder = 'ввести задачу';
   inputLabel.append(formInput);
 
+  const prioritySelect = createPrioritySelect();
+
   const submitButton = createButton({
     type: 'submit',
     className: 'btn btn-primary me-3',
     value: 'Сохранить',
   });
   submitButton.dataset.action = 'add_task';
+  submitButton.disabled = true;
 
   const resetButton = createButton({
     type: 'reset',
@@ -57,7 +87,7 @@ const createForm = (props) => {
     value: 'Очистить',
   });
 
-  form.append(inputLabel, submitButton, resetButton);
+  form.append(inputLabel, prioritySelect, submitButton, resetButton);
 
   form.submitBtn = submitButton;
   form.resetBtn = resetButton;
@@ -102,11 +132,23 @@ const getCurrentTasksCount = () => document.querySelectorAll('.task').length;
 const createTask = (taskData) => {
   const idColumn = createTableColumn({ value: getCurrentTasksCount() + 1 });
 
-  const { finished, name } = taskData;
+  const { id, finished, name, priority } = taskData;
   const taskColumn = createTableColumn({
     value: name,
     className: 'task' + (finished ? ' text-decoration-line-through' : ''),
   });
+
+  const saveButton = createButton({
+    className: 'btn btn-success d-none',
+    value: 'Сохранить',
+  });
+  saveButton.dataset.action = 'save';
+
+  const editButton = createButton({
+    className: 'btn btn-info',
+    value: 'Редактировать',
+  });
+  editButton.dataset.action = 'edit';
 
   const deleteButton = createButton({
     className: 'btn btn-danger',
@@ -120,8 +162,10 @@ const createTask = (taskData) => {
   });
   finishButton.dataset.action = 'finish';
 
-  const controlColumn = createTableColumn({ className: 'd-flex gap-2' });
-  controlColumn.append(deleteButton, finishButton);
+  const controlColumn = createTableColumn({
+    className: 'd-flex gap-2 justify-content-end',
+  });
+  controlColumn.append(saveButton, editButton, deleteButton, finishButton);
 
   const statusColumn = createTableColumn({
     value: finished ? 'Выполнена' : 'В процессе',
@@ -129,10 +173,15 @@ const createTask = (taskData) => {
   });
 
   const taskRow = createTableRow({
-    className: finished ? 'table-success' : 'table-light',
+    className: finished ? 'table-success' : getPriorityClass(priority),
   });
 
+  taskRow.dataset.taskId = id;
   taskRow.append(idColumn, taskColumn, statusColumn, controlColumn);
+  taskRow.editButton = editButton;
+  taskRow.saveButton = saveButton;
+  taskRow.deleteButton = deleteButton;
+  taskRow.finishButton = finishButton;
 
   return taskRow;
 };

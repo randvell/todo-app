@@ -15,20 +15,21 @@ const loadUserTasks = (user) => {
 const saveTaskToStorage = (task) => {
   const tasks = loadUserTasks(window.appUser);
   const preparedTask = {
+    id: task.id,
     name: task.name,
     finished: task.finished,
-    severity: task.severity,
+    priority: task.priority,
   };
 
   tasks.push(preparedTask);
   localStorage.setItem(`tasks_${window.appUser}`, JSON.stringify(tasks));
 };
 
-const deleteTaskFromStorage = (task) => {
+const deleteTaskFromStorage = (taskId) => {
   const tasks = loadUserTasks(window.appUser);
 
   for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].name === task) {
+    if (tasks[i].id === taskId) {
       tasks.splice(i, 1);
       break;
     }
@@ -37,12 +38,25 @@ const deleteTaskFromStorage = (task) => {
   localStorage.setItem(`tasks_${window.appUser}`, JSON.stringify(tasks));
 };
 
-const setTaskComplete = (task) => {
+const setTaskComplete = (taskId) => {
   const tasks = loadUserTasks(window.appUser);
 
   for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].name === task) {
+    if (tasks[i].id === taskId) {
       tasks[i].finished = true;
+      break;
+    }
+  }
+
+  localStorage.setItem(`tasks_${window.appUser}`, JSON.stringify(tasks));
+};
+
+const updateTaskName = (taskId, newName) => {
+  const tasks = loadUserTasks(window.appUser);
+
+  for (let i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === taskId) {
+      tasks[i].name = newName;
       break;
     }
   }
@@ -58,4 +72,5 @@ export {
   deleteTaskFromStorage,
   getUserTasksCount,
   setTaskComplete,
+  updateTaskName,
 };

@@ -6,7 +6,7 @@ import {
   createTask,
 } from './createElements.js';
 
-import { formControl, tableControl } from './control.js';
+import { formControl, renumberRows, tableControl } from './control.js';
 import { loadUserTasks } from './storage.js';
 
 const renderUserTasks = (tableBody, userTasks) => {
@@ -14,6 +14,8 @@ const renderUserTasks = (tableBody, userTasks) => {
     const taskRow = createTask(task);
     tableBody.append(taskRow);
   });
+
+  renumberRows(tableBody);
 };
 
 const todoApp = (container, user) => {
